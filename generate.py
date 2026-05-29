@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-안양자이 헤리티온 입주 D-DAY 배너 자동 생성 스크립트
+안양자이 헤리티온 입주 D-DAY 배너 자동 생성 (960x300 가로형)
 매일 GitHub Actions가 실행 -> dday.png 를 새로 그려서 저장
 """
 from PIL import Image, ImageDraw, ImageFont
@@ -29,7 +29,7 @@ else:
     dday_text = f"D+{abs(diff)}"
     sub_text = "입주를 축하합니다!"
 
-W, H = 1200, 600
+W, H = 960, 300
 top = np.array([30, 58, 95])
 mid = np.array([44, 82, 130])
 bot = np.array([49, 130, 206])
@@ -45,53 +45,51 @@ for y in range(H):
 img = Image.fromarray(arr).convert("RGB")
 draw = ImageDraw.Draw(img)
 
-# 폰트 경로 (레포의 fonts 폴더에 넣어둠)
 FONT_DIR = os.path.join(os.path.dirname(__file__), "fonts")
 def load(name, size):
     return ImageFont.truetype(os.path.join(FONT_DIR, name), size)
 
-f_top  = load("NotoSansKR-Regular.ttf", 40)
-f_name = load("NotoSansKR-Bold.ttf", 60)
-f_dday = load("NotoSansKR-Black.ttf", 190)
-f_date = load("NotoSansKR-Regular.ttf", 36)
-f_sub  = load("NotoSansKR-Regular.ttf", 34)
-
-cx = W // 2
-def center(y, text, font, fill, shadow=None):
-    bbox = draw.textbbox((0, 0), text, font=font)
-    w = bbox[2] - bbox[0]
-    x = cx - w // 2 - bbox[0]
-    yy = y - bbox[1]
-    if shadow:
-        draw.text((x + 3, yy + 4), text, font=font, fill=shadow)
-    draw.text((x, yy), text, font=font, fill=fill)
+f_top  = load("NotoSansKR-Regular.ttf", 26)
+f_name = load("NotoSansKR-Bold.ttf", 40)
+f_dday = load("NotoSansKR-Black.ttf", 130)
+f_date = load("NotoSansKR-Regular.ttf", 22)
+f_sub  = load("NotoSansKR-Regular.ttf", 22)
 
 white = (255, 255, 255)
 light = (203, 227, 255)
 gold  = (255, 217, 102)
 pale  = (226, 232, 240)
 
-# 집 아이콘
+def text_left(x, y, text, font, fill, shadow=None):
+    bbox = draw.textbbox((0, 0), text, font=font)
+    yy = y - bbox[1]
+    if shadow:
+        draw.text((x + 2, yy + 3), text, font=font, fill=shadow)
+    draw.text((x - bbox[0], yy), text, font=font, fill=fill)
+    return bbox[2] - bbox[0]
+
+LX = 55
 def draw_house(cxi, cyi, s, color):
     draw.polygon([(cxi, cyi - s*0.55), (cxi - s*0.6, cyi - s*0.05),
                   (cxi + s*0.6, cyi - s*0.05)], fill=color)
     draw.rectangle([cxi - s*0.42, cyi - s*0.05, cxi + s*0.42, cyi + s*0.5], fill=color)
 
-label = "우리 아파트 입주까지"
-_bbox = draw.textbbox((0, 0), label, font=f_top)
-_tw = _bbox[2] - _bbox[0]
-draw_house(cx - _tw // 2 - 45, 88, 38, light)
+draw_house(LX + 11, 70, 24, light)
+text_left(LX + 32, 60, "우리 아파트 입주까지", f_top, light)
+text_left(LX, 95, APT_NAME, f_name, white)
+text_left(LX, 175, "입주 예정일", f_date, pale)
+text_left(LX, 205, f"{TARGET.year}년 {TARGET.month}월 {TARGET.day}일", f_sub, light)
 
-center(70,  label, f_top, light)
-center(135, APT_NAME, f_name, white)
-center(225, dday_text, f_dday, gold, shadow=(0, 0, 0))
-center(470, f"입주 예정일 : {TARGET.year}년 {TARGET.month}월 {TARGET.day}일", f_date, pale)
-center(525, sub_text, f_sub, light)
+bbox = draw.textbbox((0, 0), dday_text, font=f_dday)
+dw = bbox[2] - bbox[0]
+RX = W - 55 - dw
+dy = 95
+draw.text((RX - bbox[0] + 3, dy - bbox[1] + 4), dday_text, font=f_dday, fill=(0, 0, 0))
+draw.text((RX - bbox[0], dy - bbox[1]), dday_text, font=f_dday, fill=gold)
 
-# 둥근 모서리
-mask = Image.new("L", (W, H), 0)
-ImageDraw.Draw(mask).rounded_rectangle([0, 0, W-1, H-1], radius=40, fill=255)
-out = Image.new("RGB", (W, H), (255, 255, 255))
-out.paste(img, (0, 0), mask)
-out.save("dday.png")
-print(f"생성 완료: {dday_text} ({sub_text})")
+sb = draw.textbbox((0, 0), sub_text, font=f_sub)
+sw = sb[2] - sb[0]
+draw.text((W - 55 - sw - sb[0], 235 - sb[1]), sub_text, font=f_sub, fill=light)
+
+img.save("dday.png")
+print(f"생성 완료: {dday_text} ({sub_text}) / 960x300")
