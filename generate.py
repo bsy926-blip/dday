@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-안양자이 헤리티온 입주 D-DAY 배너 자동 생성 (960x300 가로형)
-매일 GitHub Actions가 실행 -> dday.png 를 새로 그려서 저장
+안양자이 헤리티온 입주 D-DAY 배너 자동 생성
+표시 크기 960x150, 선명하게 2배 해상도(1920x300)로 생성
 """
 from PIL import Image, ImageDraw, ImageFont
 from datetime import date
@@ -29,7 +29,11 @@ else:
     dday_text = f"D+{abs(diff)}"
     sub_text = "입주를 축하합니다!"
 
-W, H = 960, 300
+# 표시 960x150 의 2배 해상도
+S = 2
+BW, BH = 960, 150          # 기준(표시) 크기
+W, H = BW*S, BH*S          # 실제 생성 크기 1920x300
+
 top = np.array([30, 58, 95])
 mid = np.array([44, 82, 130])
 bot = np.array([49, 130, 206])
@@ -47,13 +51,13 @@ draw = ImageDraw.Draw(img)
 
 FONT_DIR = os.path.join(os.path.dirname(__file__), "fonts")
 def load(name, size):
-    return ImageFont.truetype(os.path.join(FONT_DIR, name), size)
+    return ImageFont.truetype(os.path.join(FONT_DIR, name), int(size*S))
 
-f_top  = load("NotoSansKR-Regular.ttf", 26)
-f_name = load("NotoSansKR-Bold.ttf", 40)
-f_dday = load("NotoSansKR-Black.ttf", 130)
-f_date = load("NotoSansKR-Regular.ttf", 22)
-f_sub  = load("NotoSansKR-Regular.ttf", 22)
+# 납작한 비율(150)에 맞춰 폰트/위치 조정
+f_top  = load("NotoSansKR-Regular.ttf", 19)
+f_name = load("NotoSansKR-Bold.ttf", 33)
+f_dday = load("NotoSansKR-Black.ttf", 92)
+f_sub  = load("NotoSansKR-Regular.ttf", 17)
 
 white = (255, 255, 255)
 light = (203, 227, 255)
@@ -64,32 +68,35 @@ def text_left(x, y, text, font, fill, shadow=None):
     bbox = draw.textbbox((0, 0), text, font=font)
     yy = y - bbox[1]
     if shadow:
-        draw.text((x + 2, yy + 3), text, font=font, fill=shadow)
+        draw.text((x + 2*S, yy + 2*S), text, font=font, fill=shadow)
     draw.text((x - bbox[0], yy), text, font=font, fill=fill)
     return bbox[2] - bbox[0]
 
-LX = 55
+LX = 48*S
 def draw_house(cxi, cyi, s, color):
     draw.polygon([(cxi, cyi - s*0.55), (cxi - s*0.6, cyi - s*0.05),
                   (cxi + s*0.6, cyi - s*0.05)], fill=color)
     draw.rectangle([cxi - s*0.42, cyi - s*0.05, cxi + s*0.42, cyi + s*0.5], fill=color)
 
-draw_house(LX + 11, 70, 24, light)
-text_left(LX + 32, 60, "우리 아파트 입주까지", f_top, light)
-text_left(LX, 95, APT_NAME, f_name, white)
-text_left(LX, 175, "입주 예정일", f_date, pale)
-text_left(LX, 205, f"{TARGET.year}년 {TARGET.month}월 {TARGET.day}일", f_sub, light)
+# 왼쪽 영역
+draw_house(LX + 9*S, 38*S, 17*S, light)
+text_left(LX + 24*S, 31*S, "우리 아파트 입주까지", f_top, light)
+text_left(LX, 56*S, APT_NAME, f_name, white)
+text_left(LX, 105*S, f"입주 예정일 : {TARGET.year}년 {TARGET.month}월 {TARGET.day}일", f_sub, light)
 
+# 오른쪽 큰 D-DAY (세로 중앙)
 bbox = draw.textbbox((0, 0), dday_text, font=f_dday)
 dw = bbox[2] - bbox[0]
-RX = W - 55 - dw
-dy = 95
-draw.text((RX - bbox[0] + 3, dy - bbox[1] + 4), dday_text, font=f_dday, fill=(0, 0, 0))
+dh = bbox[3] - bbox[1]
+RX = W - 50*S - dw
+dy = (H - dh)//2
+draw.text((RX - bbox[0] + 3*S, dy - bbox[1] + 3*S), dday_text, font=f_dday, fill=(0, 0, 0))
 draw.text((RX - bbox[0], dy - bbox[1]), dday_text, font=f_dday, fill=gold)
 
+# D-DAY 아래 작은 안내
 sb = draw.textbbox((0, 0), sub_text, font=f_sub)
 sw = sb[2] - sb[0]
-draw.text((W - 55 - sw - sb[0], 235 - sb[1]), sub_text, font=f_sub, fill=light)
+draw.text((W - 50*S - sw - sb[0], 122*S - sb[1]), sub_text, font=f_sub, fill=light)
 
 img.save("dday.png")
-print(f"생성 완료: {dday_text} ({sub_text}) / 960x300")
+print(f"생성 완료: {dday_text} ({sub_text}) / {W}x{H} (표시 {BW}x{BH})")
