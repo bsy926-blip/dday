@@ -1,0 +1,35 @@
+name: 디데이 배너 매일 갱신
+
+on:
+  schedule:
+    - cron: '10 15 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 코드 가져오기
+        uses: actions/checkout@v4
+
+      - name: 파이썬 설치
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 라이브러리 설치
+        run: pip install pillow numpy
+
+      - name: 배너 이미지 생성
+        run: python generate.py
+
+      - name: 변경사항 저장(커밋)
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add dday.png
+          git commit -m "디데이 배너 자동 갱신" || echo "변경 없음"
+          git push
