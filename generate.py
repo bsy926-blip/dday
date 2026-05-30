@@ -14,7 +14,7 @@ TARGET = date(2029, 9, 1)
 APT_NAME = "안양자이 헤리티온"
 # ============================
 
-# 💡 [수정] GitHub 서버(UTC)에서도 무조건 한국 시간(KST) 기준으로 오늘 날짜를 계산하도록 설정
+# GitHub 서버에서도 무조건 한국 시간(KST) 기준으로 오늘 날짜를 계산하도록 설정
 kst_zone = timezone(timedelta(hours=9))
 today = datetime.now(kst_zone).date()
 
@@ -70,7 +70,7 @@ white = (255, 255, 255)
 light = (203, 227, 255)
 gold  = (255, 217, 102)
 
-# 좌측 정렬 텍스트 출력 함수 (오류 수정 완료)
+# 좌측 정렬 텍스트 출력 함수
 def text_left(x, y, text, font, fill, shadow=None):
     bbox = draw.textbbox((0, 0), text, font=font)
     yy = y - bbox[1]
@@ -80,4 +80,33 @@ def text_left(x, y, text, font, fill, shadow=None):
     return bbox[2] - bbox[0]
 
 LX = 48*S
-def draw_house(cxi, cy
+# 💡 [이 부분이 잘려 있었습니다] 정상적으로 복구된 집 아이콘 함수
+def draw_house(cxi, cyi, s, color):
+    draw.polygon([(cxi, cyi - s*0.55), (cxi - s*0.6, cyi - s*0.05),
+                  (cxi + s*0.6, cyi - s*0.05)], fill=color)
+    draw.rectangle([cxi - s*0.42, cyi - s*0.05, cxi + s*0.42, cyi + s*0.5], fill=color)
+
+# 왼쪽 영역 그리기
+draw_house(LX + 10*S, 34*S, 17*S, light)
+text_left(LX + 26*S, 31*S, "우리 아파트 입주까지", f_top, light)
+text_left(LX, 56*S, APT_NAME, f_name, white)
+text_left(LX, 105*S, f"입주 예정일 : {TARGET.year}년 {TARGET.month}월 {TARGET.day}일", f_sub, light)
+
+# 오른쪽 큰 D-DAY 그리기 (세로 중앙)
+bbox = draw.textbbox((0, 0), dday_text, font=f_dday)
+dw = bbox[2] - bbox[0]
+dh = bbox[3] - bbox[1]
+RX = W - 50*S - dw
+dy = (H - dh)//2
+
+draw.text((RX - bbox[0] + 3*S, dy - bbox[1] + 3*S), dday_text, font=f_dday, fill=(0, 0, 0, 100))
+draw.text((RX - bbox[0], dy - bbox[1]), dday_text, font=f_dday, fill=gold)
+
+# D-DAY 아래 작은 안내
+sb = draw.textbbox((0, 0), sub_text, font=f_sub)
+sw = sb[2] - sb[0]
+draw.text((W - 50*S - sw - sb[0], 122*S - sb[1]), sub_text, font=f_sub, fill=light)
+
+# 이미지 저장
+img.save("dday.png")
+print(f"생성 완료: {dday_text} ({sub_text}) / {W}x{H} (표시 {BW}x{BH})")
