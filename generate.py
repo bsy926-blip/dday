@@ -10,7 +10,7 @@ import numpy as np
 import os
 
 # ===== 설정 (입주 예정일) =====
-TARGET = date(2029, 9, 1)
+TARGET = date(2029, 9, 30)
 APT_NAME = "안양자이 헤리티온"
 # ============================
 
