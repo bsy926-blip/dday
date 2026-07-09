@@ -37,20 +37,22 @@ S = 2
 BW, BH = 960, 150          # 기준(표시) 크기
 W, H = BW*S, BH*S          # 실제 생성 크기 1920x300
 
-top = np.array([30, 58, 95])
-mid = np.array([44, 82, 130])
-bot = np.array([49, 130, 206])
+# =========================================================================
+# 💡 [수정 완료] 상단(다크 네이비) -> 하단(연그레이) 수직 그라데이션 구현
+# =========================================================================
+top_color = np.array([2, 29, 47], dtype=np.uint8)     # image_8d3bac.png (다크 네이비)
+bot_color = np.array([244, 244, 244], dtype=np.uint8) # image_8d4784.png (소프트 연그레이)
 
 arr = np.zeros((H, W, 3), dtype=np.uint8)
 for y in range(H):
     t = y / (H - 1)
-    if t < 0.5:
-        c = top + (mid - top) * (t / 0.5)
-    else:
-        c = mid + (bot - mid) * ((t - 0.5) / 0.5)
+    # 위에서 아래로 갈수록 비율(t)에 따라 색상이 부드럽게 섞입니다
+    c = top_color + (bot_color - top_color) * t
     arr[y, :] = c
+
 img = Image.fromarray(arr).convert("RGB")
 draw = ImageDraw.Draw(img)
+# =========================================================================
 
 FONT_DIR = os.path.join(os.path.dirname(__file__), "fonts")
 def load(name, size):
@@ -80,7 +82,7 @@ def text_left(x, y, text, font, fill, shadow=None):
     return bbox[2] - bbox[0]
 
 LX = 48*S
-# 💡 [이 부분이 잘려 있었습니다] 정상적으로 복구된 집 아이콘 함수
+# 정상적으로 복구된 집 아이콘 함수
 def draw_house(cxi, cyi, s, color):
     draw.polygon([(cxi, cyi - s*0.55), (cxi - s*0.6, cyi - s*0.05),
                   (cxi + s*0.6, cyi - s*0.05)], fill=color)
