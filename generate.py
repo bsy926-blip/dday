@@ -3,6 +3,7 @@
 """
 안양자이 헤리티온 입주 D-DAY 배너 자동 생성
 표시 크기 960x150, 선명하게 2배 해상도(1920x300)로 생성
+모든 텍스트에 D-DAY와 동일한 그림자 효과를 추가하여 가독성 개선
 """
 from PIL import Image, ImageDraw, ImageFont
 from datetime import date, datetime, timedelta, timezone
@@ -37,13 +38,13 @@ BW, BH = 960, 150          # 기준(표시) 크기
 W, H = BW*S, BH*S          # 실제 생성 크기 1920x300
 
 # =========================================================================
-# 💡 [오류 수정] 외부 라이브러리(NumPy) 없이 순수 PIL로 그라데이션 구현
+# 외부 라이브러리 없이 순수 PIL로 그라데이션 구현
 # =========================================================================
 img = Image.new("RGB", (W, H))
 draw = ImageDraw.Draw(img)
 
-top_color = (2, 29, 47)       # image_8d3bac.png (다크 네이비)
-bot_color = (244, 244, 244)   # image_8d4784.png (소프트 연그레이)
+top_color = (2, 29, 47)       # 다크 네이비
+bot_color = (244, 244, 244)   # 소프트 연그레이
 
 for y in range(H):
     t = y / (H - 1) if H > 1 else 0
@@ -67,16 +68,19 @@ f_name = load("NotoSansKR-Bold.ttf", 33)
 f_dday = load("NotoSansKR-Black.ttf", 92)
 f_sub  = load("NotoSansKR-Regular.ttf", 17)
 
+# 색상 정의
 white = (255, 255, 255)
-light = (203, 227, 255)
-gold  = (255, 217, 102)
+light = (203, 227, 255) # 연한 하늘색
+gold  = (255, 217, 102) # 황금빛
+shadow_color = (0, 0, 0, 100) # 반투명 검정 그림자 (D-DAY와 동일)
 
-# 좌측 정렬 텍스트 출력 함수
+# 좌측 정렬 텍스트 출력 함수 (그림자 처리 강화)
 def text_left(x, y, text, font, fill, shadow=None):
     bbox = draw.textbbox((0, 0), text, font=font)
     yy = y - bbox[1]
+    # 그림자가 지정된 경우, 오프셋을 3*S로 더 크고 명확하게 적용
     if shadow:
-        draw.text((x + 2*S - bbox[0], yy + 2*S), text, font=font, fill=shadow)
+        draw.text((x + 3*S - bbox[0], yy + 3*S), text, font=font, fill=shadow)
     draw.text((x - bbox[0], yy), text, font=font, fill=fill)
     return bbox[2] - bbox[0]
 
@@ -89,9 +93,11 @@ def draw_house(cxi, cyi, s, color):
 
 # 왼쪽 영역 그리기
 draw_house(LX + 10*S, 34*S, 17*S, light)
-text_left(LX + 26*S, 31*S, "우리 아파트 입주까지", f_top, light)
-text_left(LX, 56*S, APT_NAME, f_name, white)
-text_left(LX, 105*S, f"입주 예정일 : {TARGET.year}년 {TARGET.month}월 {TARGET.day}일", f_sub, light)
+
+# 💡 [가독성 개선] 왼쪽의 모든 텍스트에 그림자 추가
+text_left(LX + 26*S, 31*S, "우리 아파트 입주까지", f_top, light, shadow=shadow_color)
+text_left(LX, 56*S, APT_NAME, f_name, white, shadow=shadow_color)
+text_left(LX, 105*S, f"입주 예정일 : {TARGET.year}년 {TARGET.month}월 {TARGET.day}일", f_sub, light, shadow=shadow_color)
 
 # 오른쪽 큰 D-DAY 그리기 (세로 중앙)
 bbox = draw.textbbox((0, 0), dday_text, font=f_dday)
@@ -100,23 +106,19 @@ dh = bbox[3] - bbox[1]
 RX = W - 50*S - dw
 dy = (H - dh)//2
 
-draw.text((RX - bbox[0] + 3*S, dy - bbox[1] + 3*S), dday_text, font=f_dday, fill=(0, 0, 0, 100))
+# 💡 [동일 스타일] D-DAY 그림자 오프셋을 3*S로 유지
+draw.text((RX - bbox[0] + 3*S, dy - bbox[1] + 3*S), dday_text, font=f_dday, fill=shadow_color)
 draw.text((RX - bbox[0], dy - bbox[1]), dday_text, font=f_dday, fill=gold)
 
-# =========================================================================
-# 💡 D-DAY 아래 작은 안내 (요청하신 반투명 검정 그림자 효과 추가 구간)
-# =========================================================================
+# D-DAY 아래 작은 안내
 sb = draw.textbbox((0, 0), sub_text, font=f_sub)
 sw = sb[2] - sb[0]
 sub_x = W - 50*S - sw - sb[0]
 sub_y = 122*S - sb[1]
 
-# 1. 뒤쪽에 검정색 그림자 글씨 배치 (3*S 오프셋 적용)
-draw.text((sub_x + 3*S, sub_y + 3*S), sub_text, font=f_sub, fill=(0, 0, 0, 100))
-
-# 2. 앞쪽에 원래 하늘색 본문 글씨 얹기
+# 💡 [동일 스타일] 오른쪽 아래 서브 문구 그림자 오프셋을 3*S로 유지
+draw.text((sub_x + 3*S, sub_y + 3*S), sub_text, font=f_sub, fill=shadow_color)
 draw.text((sub_x, sub_y), sub_text, font=f_sub, fill=light)
-# =========================================================================
 
 # 이미지 저장
 img.save("dday.png")
