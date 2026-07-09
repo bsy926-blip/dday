@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 안양자이 헤리티온 입주 D-DAY 배너 자동 생성
-표시 크기 960x150, 선명하게 2배 해상도(1920  x300)로 생성
+표시 크기 960x150, 선명하게 2배 해상도(1920x300)로 생성
 """
 from PIL import Image, ImageDraw, ImageFont
 from datetime import date, datetime, timedelta, timezone
@@ -103,10 +103,20 @@ dy = (H - dh)//2
 draw.text((RX - bbox[0] + 3*S, dy - bbox[1] + 3*S), dday_text, font=f_dday, fill=(0, 0, 0, 100))
 draw.text((RX - bbox[0], dy - bbox[1]), dday_text, font=f_dday, fill=gold)
 
-# D-DAY 아래 작은 안내
+# =========================================================================
+# 💡 D-DAY 아래 작은 안내 (요청하신 반투명 검정 그림자 효과 추가 구간)
+# =========================================================================
 sb = draw.textbbox((0, 0), sub_text, font=f_sub)
 sw = sb[2] - sb[0]
-draw.text((W - 50*S - sw - sb[0], 122*S - sb[1]), sub_text, font=f_sub, fill=light)
+sub_x = W - 50*S - sw - sb[0]
+sub_y = 122*S - sb[1]
+
+# 1. 뒤쪽에 검정색 그림자 글씨 배치 (3*S 오프셋 적용)
+draw.text((sub_x + 3*S, sub_y + 3*S), sub_text, font=f_sub, fill=(0, 0, 0, 100))
+
+# 2. 앞쪽에 원래 하늘색 본문 글씨 얹기
+draw.text((sub_x, sub_y), sub_text, font=f_sub, fill=light)
+# =========================================================================
 
 # 이미지 저장
 img.save("dday.png")
