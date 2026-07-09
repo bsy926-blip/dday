@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 안양자이 헤리티온 입주 D-DAY 배너 자동 생성
-표시 크기 960x150, 선명하게 2배 해상도(1920x300)로 생성
+표시 크기 960x150, 선명하게 2배 해상도(1920  x300)로 생성
 """
 from PIL import Image, ImageDraw, ImageFont
 from datetime import date, datetime, timedelta, timezone
