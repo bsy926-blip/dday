@@ -73,7 +73,7 @@ light = (203, 227, 255)
 gold  = (255, 217, 102)
 shadow_color = (0, 0, 0, 100)  # 반투명 검정 그림자
 
-# 💡 image_8e98c7.png 에서 추출한 딥 다크 네이비 폰트 컬러
+# 💡 추출한 딥 다크 네이비 폰트 컬러
 requested_dark_navy = (2, 29, 47)
 
 # 좌측 정렬 텍스트 출력 함수
@@ -92,15 +92,15 @@ def draw_house(cxi, cyi, s, color):
                   (cxi + s*0.6, cyi - s*0.05)], fill=color)
     draw.rectangle([cxi - s*0.42, cyi - s*0.05, cxi + s*0.42, cyi + s*0.5], fill=color)
 
-# 왼쪽 영역 그리기
+# 왼쪽 영역 그리기 (그림자 없음)
 draw_house(LX + 10*S, 34*S, 17*S, light)
 text_left(LX + 26*S, 31*S, "우리 아파트 입주까지", f_top, light, shadow=None)
 text_left(LX, 56*S, APT_NAME, f_name, white, shadow=None)
 
-# 💡 [요청 반영] 입주 예정일 텍스트 컬러를 딥 다크 네이비(requested_dark_navy)로 변경
+# 입주 예정일 텍스트 컬러 (딥 다크 네이비)
 text_left(LX, 105*S, f"입주 예정일 : {TARGET.year}년 {TARGET.month}월 {TARGET.day}일", f_sub, requested_dark_navy, shadow=None)
 
-# 오른쪽 큰 D-DAY 그리기 (세로 중앙 + 정석 그림자)
+# 오른쪽 큰 D-DAY 그리기 (세로 중앙 + 정석 그림자 유지)
 bbox = draw.textbbox((0, 0), dday_text, font=f_dday)
 dw = bbox[2] - bbox[0]
 dh = bbox[3] - bbox[1]
@@ -110,14 +110,17 @@ dy = (H - dh)//2
 draw.text((RX - bbox[0] + 3*S, dy - bbox[1] + 3*S), dday_text, font=f_dday, fill=shadow_color)
 draw.text((RX - bbox[0], dy - bbox[1]), dday_text, font=f_dday, fill=gold)
 
-# 오른쪽 아래 서브 문구 (검정 그림자 + 딥 다크 네이비)
+# =========================================================================
+# 💡 [요청 반영] 오른쪽 아래 서브 문구 - 검정 그림자 완전 삭제 (단색 처리)
+# =========================================================================
 sb = draw.textbbox((0, 0), sub_text, font=f_sub)
 sw = sb[2] - sb[0]
 sub_x = W - 50*S - sw - sb[0]
 sub_y = 122*S - sb[1]
 
-draw.text((sub_x + 3*S, sub_y + 3*S), sub_text, font=f_sub, fill=shadow_color)
+# 그림자 그리는 코드를 아예 제거하고, 오직 지정 네이비 색상으로만 선명하게 출력
 draw.text((sub_x, sub_y), sub_text, font=f_sub, fill=requested_dark_navy)
+# =========================================================================
 
 # 이미지 저장
 img.save("dday.png")
